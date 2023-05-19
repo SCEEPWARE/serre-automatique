@@ -1,0 +1,7 @@
+{
+  "type": "commonjs",
+  "dependencies": {
+    "nodemon": "^2.0.22",
+    "ws": "^8.13.0"
+  }
+}
