@@ -1,63 +1,73 @@
-// Importing the required modules
+// Importation des modules requis
 const WebSocketServer = require('ws');
 const { spawn } = require('child_process');
 
-// Créer les variables
-const temperatures = []; // Store readings
+// Création des variables (y'en a pas)
 
 
-// Creating a new websocket server
+
+
+// Création d'un serveur websocket
 const wss = new WebSocketServer.Server({ port: 2026 })
  
 var number = 0;
 
-// Creating connection using websocket
+// Création d'une connection avec le websocket
 wss.on("connection", ws => {
-    console.log("new client connected");
-
-    var connectSend = {
-        id: "%status",
-        value: "Welcome, you are connected!"
-    }
+    console.log("Nouveau client connecté");
  
-    // sending message to client
-    ws.send(connectSend);
+    // envoie un message au client
+    sendMsg("%status", "Vous êtes connecté!");
  
-    //on message from client
+    // quand un message du client est reçu
     ws.on("message", data => {
-        console.log(`Client has sent us: ${data}`)
-        number++;
-        ws.send(jsonTempSend);
+        console.log(`Le client a envoyé: ${data}`)
     });
  
-    // handling what to do when clients disconnects from server
+    // gère quand le client se déconnecte
     ws.on("close", () => {
-        console.log("the client has connected");
+        console.log("Le client s'est déconnecté");
     });
-    // handling client connection error
+    // gère quand il y a une erreur
     ws.onerror = function () {
-        console.log("Some Error occurred")
+        console.log("Une erreur s'est produite")
     }
-});
 
-// Récupérer valeur capteur
-const temperature_script = spawn('python', ['_temp.py']);
-temperature_script.stdout.on('data', function(data) {
+
+    // Créer les fonctions
+
+    // Cette fonction permet d'envoyer un message avec une ID spécifique.
+    // Le premier paramètre est l'ID. L'ID permet de remplacer l'endroit spécifique que l'on souhaite dans la page HTML.
+    // Le second est le message. Le message est tout simplement le texte par lequel on remplace ce fichier.
+    // Il y a plus haut (ligne 20 environ, dans tous les cas c'est le seul texte en français) un exemple d'utilisation (et aussi pour la partie python).
+
+    function sendMsg(id, msg){
+       var msgToSend = JSON.stringify({
+           id: id,
+           value: msg
+        });
+       ws.send(msgToSend);
+    };
+
+
+    // Partie python dans le javascript
+
+    // Partie température
+
+    // Récupérer valeur capteur
+    const temperature_script = spawn('python', ['_temp.py']);
+    temperature_script.stdout.on('data', function(data) {
     
-    // // Coerce Buffer object to Float
-    // temperatures.push(parseFloat(data));
+        // // Coerce Buffer object to Float - pas traduit mais osef de cette partie là tu peux même la dégager si tu veux
+        // temperatures.push(parseFloat(data));
 
-    // // Log to debug
-    // console.log(temperatures);
-    var temperature = parseFloat(data);
-    console.log(temperature);
+        var temperature = parseFloat(data);
+        console.log(temperature);
 
-    var tempSend = {
-        id: "%temp",
-        value: temperature
-    }
+        sendMsg("%temp", temperature);
+    });
 
-    jsonTempSend = JSON.stringify(tempSend);
 });
 
+// la ligne qui sert à (quasiment) rien
 console.log("The WebSocket server is running on port 2026");
