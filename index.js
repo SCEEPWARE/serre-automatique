@@ -64,7 +64,7 @@ wss.on("connection", ws => {
         var temperature = parseFloat(data);
         console.log(temperature);
 
-        sendMsg("%temp", temperature);
+        sendMsg("%temp", temperature + ' °C');
     });
 
 });
